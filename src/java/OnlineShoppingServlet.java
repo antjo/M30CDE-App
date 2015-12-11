@@ -75,12 +75,15 @@ public class OnlineShoppingServlet extends HttpServlet {
         response.setContentType("text/html;charset=UTF-8");
         try (PrintWriter out = response.getWriter()) {              
 
-            //if session variable is null
+            //if the global session variable is null
             if(this.session == null) this.session = request.getSession();
-
-            String action = request.getParameter("action");
-            int itemID;
             
+            //the action, or button, that has been activated
+            //will activate a specific case below depending on the action
+            String action = request.getParameter("action");
+            
+            //if the servlet redirected to itself during the previous redirect
+            //will use the attribute action instead of the parameter action which will have the wrong action value
             String newAction = (String)request.getAttribute("newAction");
             if(newAction != null && !newAction.equals("")){
                 action = newAction;
@@ -138,15 +141,7 @@ public class OnlineShoppingServlet extends HttpServlet {
                 case "Customers":
                     this.session.setAttribute("customerList", getCustomers());
                     url="/viewcustomers.jsp";                    
-                    break;
-                /*    
-                case "Delete User":
-                    removeCustomer(request.getParameter("userID"));
-                    url = "/OnlineShoppingServlet";
-                    request.setAttribute("newAction", "Customers");                    
-                    //TODO: delete user method here
-                    break;
-                */
+                    break;               
                 case "Add To Cart":      
                     addItemToCart(request);   
                     url = "/OnlineShoppingServlet";
@@ -165,7 +160,7 @@ public class OnlineShoppingServlet extends HttpServlet {
                     url = "/cart.jsp";                   
                     break;
                 case "Remove Item":
-                    itemID = Integer.parseInt(request.getParameter("itemID"));
+                    int itemID = Integer.parseInt(request.getParameter("itemID"));
                     removeItemFromDB(itemID);
                     url = "/OnlineShoppingServlet";
                     request.setAttribute("newAction", "Items");
@@ -193,6 +188,7 @@ public class OnlineShoppingServlet extends HttpServlet {
                 case "Inspect Order":
                     this.session.setAttribute("orderItemList", getOrderItems(request));
                     this.session.setAttribute("orderPrice", getOrderPrice(request));
+                    this.session.setAttribute("orderID", request.getParameter("orderID"));
                     url = "/orderinspection.jsp";
                     break;
                 case "Confirm Order":
@@ -267,6 +263,8 @@ public class OnlineShoppingServlet extends HttpServlet {
         return "Short description";
     }// </editor-fold>
 
+    //will collect email and password from the request parameters and check wheter or not this account exists
+    //different redirections depending on if the login succeds or not
     private boolean loginValidation(HttpServletRequest request) throws SQLException {
         String username = request.getParameter("email");
         String password = request.getParameter("password");            
@@ -287,7 +285,9 @@ public class OnlineShoppingServlet extends HttpServlet {
         
         
     }
-
+    
+    //will gather all parameters from the request and make a new customer account
+    //will return error messages through session if a parameter was invalid
     private boolean registerValidation(HttpServletRequest request) throws SQLException {
           
         
@@ -335,7 +335,8 @@ public class OnlineShoppingServlet extends HttpServlet {
             
         
     }
-
+    
+    //will check if every string in the given string array equals ""
     private boolean emptyStringArray(String[] array){
         boolean empty = true;
         if(array == null) return empty;
@@ -344,7 +345,9 @@ public class OnlineShoppingServlet extends HttpServlet {
         }
         return empty;
     }
-
+    
+    //Will perform a check to see if an email has been used earlier
+    //used in the registration validation control
     private boolean usernameAvailable(String email, String[] errors) throws SQLException {
        String query = "SELECT * FROM customers WHERE email = ?";       
        PreparedStatement pstmt = this.conn.prepareStatement(query);
@@ -358,6 +361,7 @@ public class OnlineShoppingServlet extends HttpServlet {
        return true;
     }
 
+    //will return a list of customers for the jsp page
     private ResultSet getCustomers() throws SQLException {
         Statement stmt = this.conn.createStatement();
         String query = "SELECT * FROM customers";
@@ -365,6 +369,8 @@ public class OnlineShoppingServlet extends HttpServlet {
         return res;
     }
 
+    //Will return a list of items to the jsp pages
+    //the boolean will determine if items with quantitys below 1 should be included
     private ResultSet getItems(boolean onlyAvailItems) throws SQLException {
         Statement stmt = this.conn.createStatement();
         String query = "SELECT * FROM items";
@@ -373,7 +379,7 @@ public class OnlineShoppingServlet extends HttpServlet {
         return res;
     }
 
-    
+    //will update the item quantity in the database whenever customers add an item to the cart or ifthe admin updates the quantities
     private void updateItemQuantity(boolean lowerQuantity, HttpServletRequest request) throws SQLException {
         if(request.getParameter("itemAmount").matches("\\d+")){
             int itemID = Integer.parseInt(request.getParameter("itemID"));
@@ -388,6 +394,9 @@ public class OnlineShoppingServlet extends HttpServlet {
         }
     }
 
+    //Will get the details for the item that is to be added to the cart
+    //add the details to a new CartItem object and add the object to the existing cart ArrayList
+    //Will also update the total price of the cart items which is stored in the session
     private void addItemToCart(HttpServletRequest request) throws SQLException {
         //the item to add from database
        
@@ -396,8 +405,7 @@ public class OnlineShoppingServlet extends HttpServlet {
         PreparedStatement pstmt = this.conn.prepareStatement(query);
         pstmt.setInt(1, itemID);
         ResultSet res = pstmt.executeQuery();        
-        res.next();
-        
+        res.next();        
         
         String itemName = res.getString("itemName");
         int itemPrice = Integer.parseInt(res.getString("price"));
@@ -435,6 +443,8 @@ public class OnlineShoppingServlet extends HttpServlet {
         
     }
 
+    //will update the cart ArrayList in the session object when the customer removes an item
+    //will also update the total price 
     private void removeFromCart(int itemID) {
         ArrayList<CartItem> arr = (ArrayList<CartItem>)this.session.getAttribute("cart");
         int index = 0;
@@ -452,6 +462,8 @@ public class OnlineShoppingServlet extends HttpServlet {
         this.session.setAttribute("cart", arr);
     }
 
+    //will delete the chosen item fromthe item database completely
+    //admins can perform this
     private void removeItemFromDB(int itemID) throws SQLException {
         Statement stmt = this.conn.createStatement();
         String query = "DELETE FROM items WHERE itemID = ?";               
@@ -460,7 +472,9 @@ public class OnlineShoppingServlet extends HttpServlet {
         pstmt.execute();
     }
     
-    
+    //will get the request parameters and perform a validation control
+    //if all parameters are valid, it will add a new item tothe inventory (items table)
+    //also returns error messages if one of the parameters are invalid
     private void addItemToDB(HttpServletRequest request) throws SQLException {
         String[] addItemErrors = new String[]{"","",""};
         if(!request.getParameter("itemID").matches("\\d+"))addItemErrors[0] = "* Invalid item ID!";
@@ -489,7 +503,10 @@ public class OnlineShoppingServlet extends HttpServlet {
         }
         else this.session.setAttribute("addItemErrors", addItemErrors);
     }
-
+    
+    // will get the parameters from the request to update the current users profile info
+    //will perform the same controlls as the regitration validation control
+    //the textboxes that was left empty will not be updated
     private boolean updateProfileValidation(HttpServletRequest request) throws SQLException{
         String user = (String)this.session.getAttribute("loggedInAs");
         String newPassword = request.getParameter("newpassword");
@@ -511,7 +528,7 @@ public class OnlineShoppingServlet extends HttpServlet {
             if(confirmPassword.equals(newPassword)){
                 String oldPassword = request.getParameter("oldpassword");
                 ResultSet res = stmt.executeQuery("SELECT * FROM customers WHERE email='"+user+"' and password='"+oldPassword+"'");
-                if(res.isBeforeFirst())parameters += "password="+"'"+newPassword+"'";
+                if(res.next())parameters += "password="+"'"+newPassword+"'";
                 else updateErrors[0] = "* Wrong password!";
             }
             else {
@@ -551,6 +568,7 @@ public class OnlineShoppingServlet extends HttpServlet {
         
     }
 
+    //will retrieve the profile info of the current user
     private ResultSet getProfileInfo() throws SQLException {
         String user = (String)this.session.getAttribute("loggedInAs");        
         String query = "SELECT * FROM customers WHERE email = ?";        
@@ -560,6 +578,8 @@ public class OnlineShoppingServlet extends HttpServlet {
         return res;
     }
 
+    //will update the status of a user to admin if the user is a customer
+    //or downgrade an admin to normal customer level
     private void makeUserAdmin(String user) throws SQLException {
         //Statement stmt = this.conn.createStatement();        
         String query = "SELECT * FROM customers WHERE email = ?";
@@ -576,7 +596,7 @@ public class OnlineShoppingServlet extends HttpServlet {
         else pstmt.setBoolean(1, true);
         pstmt.execute();
     }
-
+    //will check if it is ok to use a given itemID when adding a new item to the inventory
     private boolean itemIdAvailable(String itemID) throws SQLException {        
         String query = "SELECT * FROM items WHERE itemID=?";
         PreparedStatement pstmt = this.conn.prepareStatement(query);
@@ -585,6 +605,7 @@ public class OnlineShoppingServlet extends HttpServlet {
         return !res.next();        
     }
 
+    //look for specific items
     private ResultSet searchItem(boolean onlyAvailItems, HttpServletRequest request) throws SQLException {
         Statement stmt = this.conn.createStatement();
         String query = "SELECT * FROM items WHERE ";   
@@ -622,6 +643,11 @@ public class OnlineShoppingServlet extends HttpServlet {
         return res;
     }
 
+    //will only perform the payment process if a 10 digit card number has been entered, otherwise give error message
+    //will find the order ID of the latest order to make a new orderID for the new order
+    //Will then create a new order record in the orders table
+    //then loop over the items in the cart and add them tothe ordered_items table
+    //refresh and empty the cart/cart total price in the end for new orders
     private boolean payItems(HttpServletRequest request) throws SQLException {
         String cardNumber = request.getParameter("cardNumber");
         if(cardNumber.matches("\\d+") && cardNumber.length() == 10){
@@ -666,6 +692,7 @@ public class OnlineShoppingServlet extends HttpServlet {
         }
     }
 
+    //get a list of all or specific orders and store in session object
     private void getOrders(HttpServletRequest request) throws SQLException {
         Statement stmt = this.conn.createStatement();        
         String query = "SELECT * FROM orders";
@@ -674,7 +701,8 @@ public class OnlineShoppingServlet extends HttpServlet {
         ResultSet res = stmt.executeQuery(query);  
         this.session.setAttribute("ordersList", res);       
     }
-
+    
+    //change the delivery status of an order
     private void setOrderConfirmed(HttpServletRequest request) throws SQLException {
         
         int orderID = Integer.parseInt(request.getParameter("orderID"));
@@ -691,6 +719,7 @@ public class OnlineShoppingServlet extends HttpServlet {
         
     }
 
+    //will return a list of items that belons to a specific orderID
     private ResultSet getOrderItems(HttpServletRequest request) throws SQLException {
         int orderID = Integer.parseInt(request.getParameter("orderID"));    
         String query = "select i.itemID,i.itemName,oi.quantity itemQuantity,i.price,i.description,o.confirmed from ordered_items oi, items i,orders o where o.orderID= ? and oi.orderID=o.orderID and oi.itemID=i.itemID";
@@ -700,6 +729,7 @@ public class OnlineShoppingServlet extends HttpServlet {
         return res;
     }
 
+    //will return the price of a specific order
     private String getOrderPrice(HttpServletRequest request) throws SQLException {
         int orderID = Integer.parseInt(request.getParameter("orderID"));  
         String query = "SELECT orderPrice FROM orders where orderID = ?";
@@ -709,7 +739,8 @@ public class OnlineShoppingServlet extends HttpServlet {
         res.next();
         return res.getString("orderPrice");
     }
-
+    
+    //will search for a specific customer
     private ResultSet searchCustomer(HttpServletRequest request) throws SQLException {
         Statement stmt = this.conn.createStatement();
         String query = "SELECT * FROM customers WHERE ";   

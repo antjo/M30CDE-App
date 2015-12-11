@@ -19,6 +19,8 @@
             <input type="Submit" value="Home" name="action">            
         </form>
         <br>
+        <% String orderID = session.getAttribute("orderID").toString(); %>
+        <h3>Order ID: <%=orderID %> </h3>
         <br>        
         <table border="0" cellpadding="0" width="100%"> 
             <tr><td>Item ID</td>
@@ -42,8 +44,19 @@
             </tr>            
             <% } %>
             <tr></tr>
+            <tr></tr>
+            <tr></tr>
+            <tr></tr>
             <tr>
                 <td>Total Price: <%=(String)session.getAttribute("orderPrice") %></td>
+                <%if((Boolean)session.getAttribute("adminUser")){ %>
+                <td>
+                    <form action="OnlineShoppingServlet">
+                        <input type="hidden" value="<%=session.getAttribute("orderID").toString() %>" name="orderID">
+                        <input type="submit" value="Confirm Order" name="action">
+                    </form>
+                </td>
+                <% } %>
             </tr>            
             <% session.removeAttribute("orderPrice"); %>
         </table>

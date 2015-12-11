@@ -49,10 +49,7 @@
                     <td> 
                     <form action="OnlineShoppingServlet">
                         <input type="hidden" value="<%=res.getInt("orderID") %>" name="orderID">
-                        <input type="submit" value="Inspect Order" name="action">
-                        <%if((Boolean)session.getAttribute("adminUser")){ %>     
-                            <input type="submit" value="Confirm Order" name="action">                        
-                        <% } %>
+                        <input type="submit" value="Inspect Order" name="action">                        
                     </form>
                     </td> 
                 </tr>

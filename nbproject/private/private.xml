@@ -2,19 +2,6 @@
 <project-private xmlns="http://www.netbeans.org/ns/project-private/1">
     <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
-        <group>
-            <file>file:/home/anthon/NetBeansProjects/OnlineShop/web/register.jsp</file>
-            <file>file:/home/anthon/NetBeansProjects/OnlineShop/web/cart.jsp</file>
-            <file>file:/home/anthon/NetBeansProjects/OnlineShop/web/orderinspection.jsp</file>
-            <file>file:/home/anthon/NetBeansProjects/OnlineShop/web/editprofile.jsp</file>
-            <file>file:/home/anthon/NetBeansProjects/OnlineShop/web/viewcustomers.jsp</file>
-            <file>file:/home/anthon/NetBeansProjects/OnlineShop/web/login.jsp</file>
-            <file>file:/home/anthon/NetBeansProjects/OnlineShop/web/index.jsp</file>
-            <file>file:/home/anthon/NetBeansProjects/OnlineShop/web/items.jsp</file>
-            <file>file:/home/anthon/NetBeansProjects/OnlineShop/src/java/OnlineShoppingServlet.java</file>
-            <file>file:/home/anthon/NetBeansProjects/OnlineShop/web/checkout.jsp</file>
-            <file>file:/home/anthon/NetBeansProjects/OnlineShop/web/viewprofile.jsp</file>
-            <file>file:/home/anthon/NetBeansProjects/OnlineShop/web/orders.jsp</file>
-        </group>
+        <group/>
     </open-files>
 </project-private>
