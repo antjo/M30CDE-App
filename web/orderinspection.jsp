@@ -36,6 +36,7 @@
                 while(res.next()){
             %>    
             <tr>
+                
                 <td><%=res.getInt("itemID") %></td>
                 <td><%=res.getString("itemName") %></td>
                 <td><%=res.getInt("itemQuantity") %></td>
