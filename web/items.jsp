@@ -61,8 +61,8 @@
             <tr>
                 <td>Item ID<input type="text" name="itemID" size="3"></td>
                 <td>Item Name<input type="text" name="itemName" size="15"></td>
-                <td>Lower Item Price<input type="text" name="lowerItemPrice" size="2"></td>
-                <td>Upper Item Price<input type="text" name="upperItemPrice" size="2"></td>
+                <td>Lower Price<input type="text" name="lowerItemPrice" size="2"></td>
+                <td>Upper Price<input type="text" name="upperItemPrice" size="2"></td>
                 <td><input type="submit" name="action" value="Search Item"></td>
             </tr>
         </table>    

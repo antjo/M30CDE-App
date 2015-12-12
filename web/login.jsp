@@ -12,7 +12,7 @@
         <title>Online Smartphone Store</title>
     </head>
     <body>               
-        <h1>log in</h1>
+        <h1>login</h1>
         <br>
         <form action="OnlineShoppingServlet">
             <input type="Submit" value="Home" name="action">
@@ -21,16 +21,20 @@
         <br>
         <br>
         <form name="LogInForm" action="OnlineShoppingServlet">
-            Email: 
-            <input type="text" name="email" />
-            </br>
-            Password:
-            <input type="password" name="password" />
-            </br>
-            <input type="submit" value="Login" name="action" />
-            Or <a href="register.jsp"> register here</a>
+        <table>            
+            <tr>
+                <td>Email:</td> 
+                <td><input type="text" name="email" /></td>
+            </tr>
+            <tr>
+                <td>Password:</td>
+                <td><input type="password" name="password" /></td>
+            </tr>
+            <tr>
+                <td><input type="submit" value="Login" name="action" /></td>
+                <td>Or <a href="register.jsp"> register here</a></td>
+            </tr>            
+        </table>
         </form>
-        
-       
     </body>
 </html>
